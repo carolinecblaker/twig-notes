@@ -1,0 +1,339 @@
+Twig is a templating language. All features are global to all templates in any context.
+Uses {{ OUTPUT TAGS }}
+
+               {{var}}
+
+               {{“string”}}
+
+               {{ 84/3}} //Math
+
+          {# Comment TAGS#}
+
+          {% LOGIC TAGS %}
+
+                    Macros, conditionals, variables, etc..
+
+SYNTAX - “almost completely inconsistent"
+
+          {% requireLogin %} //This is complete. 
+
+          {% exit 404 %} Where exit is the function and 404 is a parameter
+
+          {% block content %}
+                    Some tags have end tags..
+          {% endblock%}
+
+          {% if foo%}
+               Some things
+         {%else%}
+               have nested tags
+          {% endif%}
+
+.. it all depends on the individual tag
+
+{%autoescape%} has end tag / character escapes all included stuff // can pass what kind of escape as parameter
+                                                                                                              {% autoescape js%}
+
+{% spaceless %} has end tag // removes any whitespace between Twig/HTML tags
+
+              {%- anytag -%} // controls exterior whitespace, wherever interior dash is set.
+
+{% verbatim %} // has end tag // does not parse in-between twig tags
+
+{% “hey “ ~ firstname %} Twig tags don’t go inside of other twig tags
+
+Twig supports five different types of values: 
+
+               Strings, Numbers, 
+
+               Booleans true/false
+
+               Arrays [‘a’,’b’]
+
+               Objects { foo: ‘bar’, bas: ‘foos'}
+
+
+EXPRESSSION - solo value or multiple values combined to form another value.
+
+“Hey “~”there” => “Hey there”
+“Day “~1 => “Day 1”
+10*(5+5) => 100
+
+VARIABLES are values that get set to a name, to be referenced later.
+
+Use the {% set %} tag to create them
+
+     {% set foo = “foo" %} 
+     {% set a = 42%} 
+     {% set foobar = “foo”~”bar" %} 
+
+     {% set foo %} 
+          <p>foo</p>
+     {% endset %} 
+
+Variables keep templates DRY
+
+{% set title = “About US" %} 
+
+<title>{{title}}</title>
+
+FILTERS modify falues.
+
+They can uppercase text, merge arrays, etc
+ use “|”
+
+     “foo”|upper => “FOO”
+     21.3|round=> 21
+     some take arguments:
+
+          “foobar”|slice(0,3) =>foo
+
+          “foobar”|slice(0,3)|upper =>FOO //Filters chain!
+
+     you can add filters to variables too:
+
+          {{foo|length}} =>3
+
+          {{value|filter}}
+
+     Filters only modify the value directly before the filter
+
+          “foo”~”bar”|upper =>fooBar
+
+          (“foo”~”bar”)|upper=>FOOBAR
+
+     |length //length of string or array
+
+     |upper, |lower //case text
+
+     |raw //protects a string from getting escaped, because twig escapes just about everything automatically
+
+     |date // formats a date {{now|date(“F j, Y”)}}
+                         April 23, 2014
+
+     FUNCTIONS
+
+     to call: {{ parent() }}
+
+     some take arguments: {{ random(1,10) }}
+
+     Some are global:
+          
+          {{ dump(foo) }}
+
+     And they can be nested within objects:
+
+         {{ craft.isLocalized() }}
+
+     min() & max() , random() for values in arrays, ranges
+
+     random(“string”) //picks a random letter out of the string
+
+     random(10) // any positive integer value up to 10
+
+     range() //creates a range of numbers as an array
+     
+    {% set r = range(1,5) %}
+
+          {% set r = [1..5] %} //two dots, shorthand for range
+
+     dump() // outputs information about a given variable. for debugging
+
+     CONDITIONALS
+
+          Prevent retain parts of your template from executing unless it’s wrapped in a matching situation
+
+
+          {%if user %} sup {% elseif username%} Is this {{username}}? {% else%} Have we met? {%endif%}
+
+
+          Expressions joined by “and" or “or":
+
+            {% if foo and bar %} 
+
+            {% if foo or bar %}  
+  
+          {% if foo and (
+
+               foo==“foo” or
+
+               foo==“bar”
+
+          ) %}  
+
+TESTS are little conditional helpers. They don’t have to be used as conditionals, but they generally are.
+
+      To write a test, use “is”
+
+
+     is defined
+       {% if foo is defined %}  
+
+     is divisible by
+       {% if 5 is divisible by (2) %}  similar to   {% if 5 % 2 == 0 %} 
+
+     is even, is odd
+
+     is empty
+          {%if foo is not empty %}
+          {% if foo%}
+     
+   is same as 
+
+            {% if 5 ==“5"  %} =>true
+
+            {% if 5 is same as “5" %}  => false     
+
+
+ARRAYS and OBJECTS
+
+     Arrays contain values in a specific or der, and have an inherent numerical index
+
+       {% set arr= [‘a’,’b’,’c’] %} 
+
+          {{ arr[0] }} => ‘a’
+          {{arr[1] }} =>’b’
+          {{arr[2] }} =>’c’
+
+     Objects contain key-value pairs and the order is less important
+
+       {% set obj= {
+          foo: “Foo”,
+          bar: “Bar”,
+          ‘foo-bar’: ‘baz'
+          }  %} 
+
+          {{obj.foo}} => “Foo”
+
+          {{ obj.bar}} => “Bar"
+          {{ obj[‘foo-bar'}} => “baz”
+
+Merge filter
+
+     where a1 and a2 are arrays or objects
+
+     {% set a3= a1|merge(a2)%}
+
+     |slice(first, last) //indexes as parameters
+
+     {% set a2 = a1[0,2] %}     // slice shorthand
+
+Looping through arrays and objects
+
+     {% for itemname in a1 %} //where itemname is an item in the array as it’s looped
+
+     {% endfor %}
+
+          {% for age in [0..100] %}
+
+               {{age}}
+
+          {%endfor%}
+
+     {%set y1 = now.year %}
+
+     {% set y2 = y1 + 10%} 
+
+     {% for year in [y1..y2] %}
+          {{year}}
+     {% endfor %} 
+
+     {% set nav=[
+
+          {title: "Home”, uri: “”},
+          {title: “about”, uri: “about”}
+
+          ]  %}
+
+     <nav>
+          {% for item in nav %}
+              
+                <a href=“{{ url(item.uri) }}”>{{item.title}}</a>
+
+          {% endfor %} 
+     </nav>
+
+DRY Templating
+
+     Templates can include others {% include “some/template”%}
+
+     by default, any variables available tot he “parent” template will also be available in the included template.
+
+     {% set foo =“foo" %}
+
+          {% include “some/template" %} // has foo
+
+     Also - can define exclusive include variables
+
+{% include “my include” 
+     with {foo:”foo”} only //“only” here eliminates vars of parent template for the child.
+       %} 
+
+EXTENDING Templates
+
+A template can extend another, overriding parts of it (called”blocks”).
+     
+Default:
+
+     {%block body%}
+
+          <p> Default content</p>
+     
+     {% endblock%}
+
+     Extension: 
+
+          {% extends “layout” %} //tag within child to tell it which template it extends
+
+          {% block body %}
+          <p> Override content</p>
+
+          {%endblock%}
+
+     Hybrid:
+
+          {% extends “layout”%}
+
+          {% block body %}
+
+          {{ parent() }}
+          <p>Additional content</p>
+
+          {%endblock%} 
+
+   EMBED tag - kind of confusing
+
+          use it to embed another template and “shove another block down its throat”
+
+               {%embed “promo”%}
+                    {% block body %}
+
+                         {{parent()}}
+               <span class=“ribbon”>
+                    50% off
+               </span>
+
+               {% endblock %}
+
+          {% endembed %}
+
+
+MACROS
+
+      - - - macros are like includes that are defined right within a template
+
+use the {% macros%} tag to definite it
+
+you must import macros before you can use them with either {% from %} or {% import %}
+
+{% from “macros” import errors %}
+{{ errors(entry.allErrors) 
+
+
+
+
+
+
+
+
+
